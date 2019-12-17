@@ -73,13 +73,29 @@ Here is the my sample plugin configuration I use for the demo deployment :
 Build the java project and do containerizing application to Docker daemon.
 
 The project we use for demo is fairly simply. It exposes Rest service and returns the static text message when it is called.
-Required maven command is compile jib:dockerBuild.  Once the build completed , your docker container is ready to run. Before pushing it to docker hub, I advise running it on your local docker environment to eliminate errors. 
+Required maven command is 
+
+compile jib:dockerBuild.  
+
+Run Docker Container, test and push to Docker Hub
+
+Once the build completed , your docker container is ready to run. Before pushing it to docker hub, I advise running it on your local docker environment to eliminate errors. 
 
 docker container run --name hello -p 8080:8080 -d kemalat/springboot-docker
 
-r2d2:~ kemalatik$ docker container ls
+docker container ls
 CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS              PORTS                    NAMES
 b3ba77dd0d71        kemalat/springboot-docker   "java -server -cp /a…"   3 minutes ago       Up 3 minutes        0.0.0.0:8080->8080/tcp   hello
 814bea5afff7        ae893c58d83f                "nginx -g 'daemon of…"   7 minutes ago       Up 7 minutes                     
 
+It is good practice to stop and remove unused containers on your local docker environment after performing inital sanity tests.
+
+docker container stop b3ba77dd0d71
+docker rmi b3ba77dd0d71
+
+docker push kemalat/springboot-docker:latest
+
+
+Delete Cluster
+https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html
 
