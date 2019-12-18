@@ -93,6 +93,11 @@ Let's test the application running as Docker container
 $ curl http://localhost:8080
 Hello Docker World
 ```
+Continue with pushing the image to Docker Hub ;
+
+```
+$ docker push kemalat/springboot-docker:latest
+```
 It is good practice to stop and remove unused containers on your local docker environment after performing inital sanity tests and pushing to Docker Hub
 
 ```
@@ -104,7 +109,7 @@ $ docker rmi b3ba77dd0d71
 Pushing the images to a registry allows the Kubernetes cluster to create pods by using your container images. The registry that you use is called Amazon Elastic Container Registry (ECR). Now start with authenticating your Docker client to your ECR registry. 
 
 ```
-aws ecr get-login --no-include-email
+$ aws ecr get-login --no-include-email
 ```
 The get-login command returns a docker login command similar to the following:
 ```
@@ -115,21 +120,21 @@ docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-eas
 Execute get-login command output to perform authentication to Amazon ECR
 
 ```
-docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-east-2.amazonaws.com
+$ docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-east-2.amazonaws.com
 ```
 Create a repository to store the springboot-docker image:
 ```
-aws ecr create-repository --repository-name kemalat/springboot-docker
+$ aws ecr create-repository --repository-name kemalat/springboot-docker
 ```
 Similar output as shown below will be returned from ECR ;
 
 ```
 {
     "repository": {
-        "repositoryArn": "arn:aws:ecr:us-east-2:010398383971:repository/kemalat/springboot-docker",
-        "registryId": "010398383971",
+        "repositoryArn": "arn:aws:ecr:us-east-2:999999999999:repository/kemalat/springboot-docker",
+        "registryId": "999999999999",
         "repositoryName": "kemalat/springboot-docker",
-        "repositoryUri": "010398383971.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker",
+        "repositoryUri": "999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker",
         "createdAt": 1576494906.0,
         "imageTagMutability": "MUTABLE",
         "imageScanningConfiguration": {
@@ -137,6 +142,58 @@ Similar output as shown below will be returned from ECR ;
         }
     }
 }
+```
+Tag your container images with the relevant data about your registry and push to ECR ;
+
+```
+$ docker tag kemalat/springboot-docker:latest 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot:latest
+```
+
+```
+docker push 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/gs-spring-boot-docker:latest
+```
+### 7. Deploying the microservices to worker nodes
+
+Deploying container image to Kubernetes done using Kubernetes resource definition. Kubernetes resource definition is a yaml file that contains a description of all your deployments, services, or any other resources that you want to deploy. All resources can also be updated or deleted from the cluster by using the same yaml file that you used to deploy them. 
+
+Here is the resource definiton(kubernetes.yaml) I used for deploying and starting the demo service ;
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-docker-deployment
+  labels:
+    app: springboot-docker
+spec:
+  selector:
+    matchLabels:
+      app: springboot-docker
+  template:
+    metadata:
+      labels:
+        app: springboot-docker
+    spec:
+      containers:
+      - name: springboot-docker-container
+        image: 010398383971.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker:latest
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-docker-service
+spec:
+  type: NodePort
+  selector:
+    app: springboot-docker
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    nodePort: 31000
+    
+    
 ```
 
 Delete Cluster
