@@ -21,6 +21,7 @@ In Short, you will be billed for Amazon EKS cluster as master node $0.20 per hou
 * Create Amazon account and be familiar with AWS web console enviroment
 * Install AWS CLI, eksctl.As starting point, please follow [Amazon EKS user guide](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) to install AWS CLI and eksctl as explained.
 * Be familiar with any Java IDE(e.g. Eclipse, Intellij Idea) and have sufficient knowledge to use Maven
+* Install `curl if you don't have on your Linux distro using
 
 
 ### 1. Create Administrator User and Group
@@ -82,27 +83,61 @@ Once the build completed , your docker container is ready to run. Before pushing
 $ docker container run --name hello -p 8080:8080 -d kemalat/springboot-docker
 ```
 ```
-docker container ls
+$ docker container ls
 CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS              PORTS                    NAMES
 b3ba77dd0d71        kemalat/springboot-docker   "java -server -cp /a…"   3 minutes ago       Up 3 minutes        0.0.0.0:8080->8080/tcp   hello
 814bea5afff7        ae893c58d83f                "nginx -g 'daemon of…"   7 minutes ago       Up 7 minutes                     
 ```
+Let's test the application running as Docker container
+```
+$ curl http://localhost:8080
+Hello Docker World
+```
+It is good practice to stop and remove unused containers on your local docker environment after performing inital sanity tests and pushing to Docker Hub
 
-It is good practice to stop and remove unused containers on your local docker environment after performing inital sanity tests.
+```
+$ docker container stop b3ba77dd0d71
+$ docker rmi b3ba77dd0d71
+```
+### 6. Push the image to a Amazon Elastic Container Registry(ECR)
 
-docker container stop b3ba77dd0d71
-docker rmi b3ba77dd0d71
+Pushing the images to a registry allows the Kubernetes cluster to create pods by using your container images. The registry that you use is called Amazon Elastic Container Registry (ECR). Now start with authenticating your Docker client to your ECR registry. 
 
-docker push kemalat/springboot-docker:latest
-
-Push the image to a Amazon Elastic Container Registry(ECR)
-
-Authenticate your Docker client to your ECR registry. Start by running the get-login command:
+```
 aws ecr get-login --no-include-email
+```
 The get-login command returns a docker login command similar to the following:
+```
 docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-east-2.amazonaws.com
+```
+> Note: The [aws_account_id] is a unique 12-digit ID that is assigned to every AWS account. You will notice this ID in the output from various commands because AWS uses it to differentiate your resources from other accounts.
 
+Execute get-login command output to perform authentication to Amazon ECR
 
+```
+docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-east-2.amazonaws.com
+```
+Create a repository to store the springboot-docker image:
+```
+aws ecr create-repository --repository-name kemalat/springboot-docker
+```
+Similar output as shown below will be returned from ECR ;
+
+```
+{
+    "repository": {
+        "repositoryArn": "arn:aws:ecr:us-east-2:010398383971:repository/kemalat/springboot-docker",
+        "registryId": "010398383971",
+        "repositoryName": "kemalat/springboot-docker",
+        "repositoryUri": "010398383971.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker",
+        "createdAt": 1576494906.0,
+        "imageTagMutability": "MUTABLE",
+        "imageScanningConfiguration": {
+            "scanOnPush": false
+        }
+    }
+}
+```
 
 Delete Cluster
 https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html
