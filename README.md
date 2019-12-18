@@ -1,33 +1,31 @@
-## Deploying spring boot java application and MySql on Amazon EKS environment
+## Deploying java application to Amazon EKS environment
 
-Be familiar with Kubernetes architecture and have a look Amazon EKS pricing page.https://aws.amazon.com/eks/pricing/
-In Short, you will be billed for Amazon EKS cluster as master node $0.20 per hour apart from worker nodes. For worker nodes according to EC2 pricing you will be charged
-In our deployment, we will run EKS on AWS using either EC2.
+### Notes 
 
-Prerequisities 
+* Be familiar with Kubernetes architecture and have a look [Amazon EKS pricing page](https://aws.amazon.com/eks/pricing/).
+In Short, you will be billed for Amazon EKS cluster as master node $0.20 per hour apart from worker nodes. For worker nodes according to [EC2 pricing](https://aws.amazon.com/ec2/pricing/on-demand/) you will be charged
+* In our deployment, we will run EKS on AWS using EC2.
 
-Get a Docker account/id.
-Download and install Docker Desktop
-Enable Kubernetes from Preferences / Kubernate tab.
-Make sure that Docker Desktop runs on your local environment
+### Prerequisities 
 
-Get a github account.
-Download and install git.
-Follow this tutorial to login github from ssh-terminal 
-https://kbroman.org/github_tutorial/pages/first_time.html
-Make sure that you managed to log in to github from your terminal 
+* Get a Docker account/id.
+* Download and install Docker Desktop
+* Enable Kubernetes from Preferences / Kubernate tab.
+* Make sure that Docker Desktop runs on your local environment
+* Get a github account.
+* Download and install git.
+* Follow this [tutorial](https://kbroman.org/github_tutorial/pages/first_time.html) to login github from ssh-terminal 
+* Make sure that you managed to log in to github from your terminal 
+* Install AWS CLI, eksctl.As starting point, please follow [Amazon EKS user guide](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) to install AWS CLI and eksctl as explained.
 
-Install AWS CLI, eksctl.
-As starting point, please follow Amazon EKS user guide to install AWS CLI and eksctl as explained
-(https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
 
-Create Administrator User and Group
+### 1. Create Administrator User and Group
 Before configuring Your AWS CLI Credentials, you need to create IAM Admin User and Group as explained. Having Admin user will simplfy the EKS creation and deployment steps without drilling down to Amazon IAM user, role and policy structure. 
-Follow this tutorial https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html
-You should be able to create Administrator User smoohtly if you follow exactly the steps on above link.
+Follow this [tutorial](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html)
+You should be able to create Administrator user smoohtly if you follow exactly the steps on above link using AWS web console.
 
-Configure Your AWS CLI Credentials
-Once you managed to create Administrator user succesfully, continue Configure Your AWS CLI Credentials as explained on this page. (https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
+### 2. Configure Your AWS CLI Credentials
+Once you managed to create Administrator user succesfully, continue configuring your AWS CLI Credentials as explained on this [page](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html).
 
 
 Clone sample project, update Maven pom.xml by adding Jib plugin.
@@ -94,6 +92,14 @@ docker container stop b3ba77dd0d71
 docker rmi b3ba77dd0d71
 
 docker push kemalat/springboot-docker:latest
+
+Push the image to a Amazon Elastic Container Registry(ECR)
+
+Authenticate your Docker client to your ECR registry. Start by running the get-login command:
+aws ecr get-login --no-include-email
+The get-login command returns a docker login command similar to the following:
+docker login -u AWS -p [password_string] https://[aws_account_id].dkr.ecr.us-east-2.amazonaws.com
+
 
 
 Delete Cluster
