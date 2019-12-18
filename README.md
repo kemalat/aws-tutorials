@@ -150,7 +150,7 @@ $ docker tag kemalat/springboot-docker:latest 999999999999.dkr.ecr.us-east-2.ama
 ```
 
 ```
-docker push 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/gs-spring-boot-docker:latest
+$ docker push 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/gs-spring-boot-docker:latest
 ```
 ### 7. Deploying the microservices to worker nodes
 
@@ -194,6 +194,34 @@ spec:
     nodePort: 31000
     
     
+```
+Now we can run the following command to deploy the resources as defined in kubernetes.yaml as shown above:
+```
+$ kubectl apply -f kubernetes.yaml
+```
+
+When the service are deployed, run the following command to check the status of pod:
+```
+$ kubectl get pods
+```
+
+If our pod is healthy and running, we see an output similar to the following:
+```
+NAME                                    READY     STATUS    RESTARTS   AGE
+springboot-docker-deployment-7d8cc5dc87-sxvdh      1/1       Running   0          30s
+```
+We can inspect the application log. Pass name of pod to kubectl logs. For example;
+
+```
+kubectl logs springboot-docker-deployment-7d8cc5dc87-sxvdh
+```
+In order to retrive cluster IP;
+```
+kubectl get service springboot-docker-service
+```
+```
+NAME                        TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+springboot-docker-service   NodePort   10.100.221.131   <none>        8080:31000/TCP   8h
 ```
 
 Delete Cluster
