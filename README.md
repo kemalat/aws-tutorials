@@ -175,7 +175,7 @@ spec:
     spec:
       containers:
       - name: springboot-docker-container
-        image: 010398383971.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker:latest
+        image: 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/springboot-docker:latest
         ports:
         - containerPort: 8080
 ---
