@@ -224,6 +224,35 @@ NAME                        TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)   
 springboot-docker-service   NodePort   10.100.221.131   <none>        8080:31000/TCP   8h
 ```
 
+> Note: Our service type is NodePort, The ClusterIP can be accessed by other Pods in the same cluster, but can not be accessed externally outside of the cluster. For NodePort type service ClusterIP is also created automatically which takes the route from the NodePort. The NodePort Service is exposed externally on the available worker nodes at port 31000 for our deployment according to our configuration. That's why we chose NodePort type service to access our web service outside from internal network.
+
+### 7. Accessing the microservice from outside(NodePort service)
+
+In order to access our web service, we need to get external IPs of our worker nodes. We will get the external ip in the output of the following command and send our HTTP requests to that IP.
+
+```
+$ kubectl get nodes -o wide |  awk {'print $1" " $2 " " $7'} | column -t
+```
+
+```
+NAME                                          STATUS  EXTERNAL-IP
+ip-192-168-18-253.us-east-2.compute.internal  Ready   18.223.117.241
+ip-192-168-60-223.us-east-2.compute.internal  Ready   3.15.200.248
+ip-192-168-67-181.us-east-2.compute.internal  Ready   3.135.186.165
+```
+Before we test accessing NodeIP:NodePort from an outside cluster, we need to modify the security group of the nodes to allow incoming traffic through the port 31000. Now you need to login to the AWS console and find the nodes, edit its security group by adding one more inbound rule. 
+
+Go to EC2 console, select Security Groups, find `eksctl-yourClusterName-nodegroup-standard-workers` and add custom TCP rule as shown in the picture.(Clicking Actions -> ).
+
+After you are finished adding the inbound rule to the security group, you might need to wait a few minutes before you try to access springboot-docker-service microservice. 
+
+```
+$ curl http://18.223.117.241:31000
+Hello Docker World
+```
+
+### 8. Deleting Cluster to avoid unnecessary costs
+
 Delete Cluster
 https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html
 
