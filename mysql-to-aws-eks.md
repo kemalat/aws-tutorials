@@ -4,7 +4,7 @@
 ### Notes 
 
 * Be familiar with Kubernetes architecture and have a look [Amazon EKS pricing page](https://aws.amazon.com/eks/pricing/).
-In Short, you will be billed for Amazon EKS cluster as master node $0.20 per hour apart from worker nodes. For worker nodes according to [EC2 pricing](https://aws.amazon.com/ec2/pricing/on-demand/) you will be charged
+You will be billed for Amazon EKS cluster as master node $0.20 per hour apart from worker nodes. For worker nodes according to [EC2 pricing](https://aws.amazon.com/ec2/pricing/on-demand/) you will be charged
 * In our deployment, we will run EKS on AWS using EC2.
 * It is assumed that you are using any Linux distribution on your local environment
 
@@ -12,6 +12,7 @@ In Short, you will be billed for Amazon EKS cluster as master node $0.20 per hou
 
 * Create Amazon account and be familiar with AWS web console enviroment
 * Install AWS CLI, eksctl. As starting point, please follow [Amazon EKS user guide](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) to install AWS CLI and eksctl as explained.
+* Install and Configure kubectl for Amazon EKS, please follow this [guide](  https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html)
 * Install any MySQL GUI tool to access database via user interface(e.g MySQL Workbench etc.)
 
 
@@ -23,8 +24,77 @@ You should be able to create Administrator user smoohtly if you follow exactly t
 ### 2. Configure Your AWS CLI Credentials
 Once you managed to create Administrator user succesfully, continue configuring your AWS CLI Credentials as explained on this [page](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html).
 
+### 3. Create EKS cluster 
+If command line tools were installed succesfully and admin user created, you would not expect any obstacle during the cluster creation step;
+
+```
+eksctl create cluster \
+--name prod \
+--version 1.14 \
+--region us-west-2 \
+--nodegroup-name standard-workers \
+--node-type t3.medium \
+--nodes 3 \
+--nodes-min 1 \
+--nodes-max 4 \
+--managed
+```
+Expected output is 
+
+```
+[ℹ]  eksctl version
+[ℹ]  using region us-west-2
+[ℹ]  setting availability zones to [us-west-2a us-west-2c us-west-2b]
+[ℹ]  subnets for us-west-2a - public:192.168.0.0/19 private:192.168.96.0/19
+[ℹ]  subnets for us-west-2c - public:192.168.32.0/19 private:192.168.128.0/19
+[ℹ]  subnets for us-west-2b - public:192.168.64.0/19 private:192.168.160.0/19
+[ℹ]  using Kubernetes version 1.14
+[ℹ]  creating EKS cluster "prod" in "us-west-2" region
+[ℹ]  will create 2 separate CloudFormation stacks for cluster itself and the initial managed nodegroup
+[ℹ]  if you encounter any issues, check CloudFormation console or try 'eksctl utils describe-stacks --region=us-west-2 --cluster=prod'
+[ℹ]  CloudWatch logging will not be enabled for cluster "prod" in "us-west-2"
+[ℹ]  you can enable it with 'eksctl utils update-cluster-logging --region=us-west-2 --cluster=prod'
+[ℹ]  Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster "prod" in "us-west-2"
+[ℹ]  2 sequential tasks: { create cluster control plane "prod", create managed nodegroup "standard-workers" }
+[ℹ]  building cluster stack "eksctl-prod-cluster"
+[ℹ]  deploying stack "eksctl-prod-cluster"
+[ℹ]  deploying stack "eksctl-prod-nodegroup-standard-workers"
+[✔]  all EKS cluster resources for "prod" have been created
+[✔]  saved kubeconfig as "/Users/ericn/.kube/config"
+[ℹ]  nodegroup "standard-workers" has 3 node(s)
+[ℹ]  node "ip-192-168-29-149.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-48-14.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-92-183.us-west-2.compute.internal" is ready
+[ℹ]  waiting for at least 1 node(s) to become ready in "standard-workers"
+[ℹ]  nodegroup "standard-workers" has 3 node(s)
+[ℹ]  node "ip-192-168-29-149.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-48-14.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-92-183.us-west-2.compute.internal" is ready
+[ℹ]  kubectl command should work with "/Users/ericn/.kube/config", try 'kubectl get nodes'
+[✔]  EKS cluster "prod" in "us-west-2" region is ready
+```
+### 4. Do cluster healthcheck
+
+Test your connectivity to the cluster ;
+
+```
+kubectl cluster-info
+```
+If no errors listed, you’re connected to the cluster. If you access multiple clusters with kubectl, be sure to verify that you’ve selected the correct cluster context:
+
+```
+kubectl config get-contexts
+```
+
+```
+Output
+CURRENT   NAME                    CLUSTER                      AUTHINFO                      NAMESPACE
+*         Administrator@mysql-clust.us-east-2.eksctl.io      mysql-clust.us-east-2.eksctl.io                    Administrator@mysql-clust.us-east-2.eksctl.io      
+          docker-for-desktop      docker-for-desktop-cluster   docker-for-desktop
+```
+
 ### 3. Install Helm
-Helm command-line utility should be installed  on your local machine. Helm comes with installation script that handles the installation process 
+Helm command-line utility should be installed  on your local machine. Helm comes with installation script that handles the installation process.Change to a writable directory and download the script from Helm’s GitHub repository and run the script. 
 
 ```
 cd /tmp
@@ -37,8 +107,9 @@ Output
 helm installed into /usr/local/bin/helm
 Run 'helm init' to configure helm.
 ```
+Next we will continue the installation by installing another Helm component on our cluster.
 
-Change to a writable directory and download the script from Helm’s GitHub repository
+
 
 ### 4. Use Google Jib Maven Plugin and build Docker Image
 Clone sample project as explained in [Spring Boot Docker guide](https://spring.io/guides/gs/spring-boot-docker/). Update Maven pom.xml by adding Jib plugin directives. Jib is a Maven plugin for building Docker images for Java applications.Simply you dont have to write DockerFile from the scratch, this Maven plugin generates it for the project structure and creates Docker Image. Here is the my sample plugin configuration I use for the demo deployment :
