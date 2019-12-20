@@ -231,7 +231,7 @@ springboot-docker-service   NodePort   10.100.221.131   <none>        8080:31000
 
 > Note: Our service type is NodePort, The ClusterIP can be accessed by other Pods in the same cluster, but can not be accessed externally outside of the cluster. For NodePort type service ClusterIP is also created automatically which takes the route from the NodePort. The NodePort Service is exposed externally on the available worker nodes at port 31000 for our deployment according to our configuration. That's why we chose NodePort type service to access our web service outside from internal network.
 
-### 7. Accessing the microservice from outside(NodePort service)
+### 7. Accessing the microservice from outside(As NodePort service)
 
 In order to access our web service, we need to get external IPs of our worker nodes. We will get the external ip in the output of the following command and send our HTTP requests to that IP.
 
@@ -256,8 +256,50 @@ $ curl http://18.223.117.241:31000
 Hello Docker World
 ```
 
-### 8. Deleting Cluster to avoid unnecessary costs
+### 8. Accessing the microservice from outside(As LoadBalancer service)
+In a cloud environment like AWS, creating an external load balancer is better than creating a NodePort for exposing Services. Because only one URL will be published to outside and web service requests will be distributed among worker nodes by load balancer to achieve optimum load distribution.
 
-Delete Cluster
-https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html
+We can create a load balancer Service by using the same template except changing the type to “LoadBalancer”. Save as your  resource definiton(kubernetes.yaml) as loadbalancer.yaml an update as shown below
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-docker-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: springboot-docker
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    
+```
+Now we can then create a load balancer Service.
+
+```
+$ kubectl delete service springboot-docker-service
+service "springboot-docker-service" deleted
+$ kubectl create -f loadbalancer.yaml
+kemalat/springboot-docker-service created
+```
+Get information about “springboot-docker-service” to learn loadbalancer URL address;
+
+```
+$ kubectl get kemalat/springboot-docker-service |  awk {'print $1" " $2 " " $4 " " $5'} | column -t
+NAME       TYPE          EXTERNAL-IP                                                             PORT(S)
+myservice  LoadBalancer  adb010d2006b511e99d7702abbb5e7b9-679524454.us-east-2.elb.amazonaws.com  80:31000/TCP    
+```    
+We can test if we can access the ELB externally.
+
+```    
+$ curl -silent adb010d2006b511e99d7702abbb5e7b9-679524454.us-east-2.elb.amazonaws.com:8080
+Hello Docker World
+```    
+
+### 9. Deleting Cluster to avoid unnecessary costs
+
+Do not forget to follow directives given [here](https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html) to delete all resources of AWS EKS cluster 
+
 
