@@ -104,7 +104,57 @@ It is good practice to stop and remove unused containers on your local docker en
 $ docker container stop b3ba77dd0d71
 $ docker rmi b3ba77dd0d71
 ```
-### 6. Push the image to a Amazon Elastic Container Registry(ECR)
+### 6. Creating EKS cluster 
+If command line tools were installed succesfully, you would not expect any obstacle during the cluster creation step;
+
+```
+eksctl create cluster \
+--name prod \
+--version 1.14 \
+--region us-west-2 \
+--nodegroup-name standard-workers \
+--node-type t3.medium \
+--nodes 3 \
+--nodes-min 1 \
+--nodes-max 4 \
+--managed
+```
+Expected output is 
+
+```
+[ℹ]  eksctl version
+[ℹ]  using region us-west-2
+[ℹ]  setting availability zones to [us-west-2a us-west-2c us-west-2b]
+[ℹ]  subnets for us-west-2a - public:192.168.0.0/19 private:192.168.96.0/19
+[ℹ]  subnets for us-west-2c - public:192.168.32.0/19 private:192.168.128.0/19
+[ℹ]  subnets for us-west-2b - public:192.168.64.0/19 private:192.168.160.0/19
+[ℹ]  using Kubernetes version 1.14
+[ℹ]  creating EKS cluster "prod" in "us-west-2" region
+[ℹ]  will create 2 separate CloudFormation stacks for cluster itself and the initial managed nodegroup
+[ℹ]  if you encounter any issues, check CloudFormation console or try 'eksctl utils describe-stacks --region=us-west-2 --cluster=prod'
+[ℹ]  CloudWatch logging will not be enabled for cluster "prod" in "us-west-2"
+[ℹ]  you can enable it with 'eksctl utils update-cluster-logging --region=us-west-2 --cluster=prod'
+[ℹ]  Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster "prod" in "us-west-2"
+[ℹ]  2 sequential tasks: { create cluster control plane "prod", create managed nodegroup "standard-workers" }
+[ℹ]  building cluster stack "eksctl-prod-cluster"
+[ℹ]  deploying stack "eksctl-prod-cluster"
+[ℹ]  deploying stack "eksctl-prod-nodegroup-standard-workers"
+[✔]  all EKS cluster resources for "prod" have been created
+[✔]  saved kubeconfig as "/Users/ericn/.kube/config"
+[ℹ]  nodegroup "standard-workers" has 3 node(s)
+[ℹ]  node "ip-192-168-29-149.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-48-14.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-92-183.us-west-2.compute.internal" is ready
+[ℹ]  waiting for at least 1 node(s) to become ready in "standard-workers"
+[ℹ]  nodegroup "standard-workers" has 3 node(s)
+[ℹ]  node "ip-192-168-29-149.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-48-14.us-west-2.compute.internal" is ready
+[ℹ]  node "ip-192-168-92-183.us-west-2.compute.internal" is ready
+[ℹ]  kubectl command should work with "/Users/ericn/.kube/config", try 'kubectl get nodes'
+[✔]  EKS cluster "prod" in "us-west-2" region is ready
+```
+
+### 7. Push the image to a Amazon Elastic Container Registry(ECR)
 
 Pushing the images to a registry allows the Kubernetes cluster to create pods by using your container images. The registry that you use is called Amazon Elastic Container Registry (ECR). Now start with authenticating your Docker client to your ECR registry. 
 
@@ -152,7 +202,7 @@ $ docker tag kemalat/springboot-docker:latest 999999999999.dkr.ecr.us-east-2.ama
 ```
 $ docker push 999999999999.dkr.ecr.us-east-2.amazonaws.com/kemalat/gs-spring-boot-docker:latest
 ```
-### 7. Deploying the microservices to worker nodes
+### 8. Deploying the microservices to worker nodes
 
 Deploying container image to Kubernetes done using Kubernetes resource definition. Kubernetes resource definition is a yaml file that contains a description of all your deployments, services, or any other resources that you want to deploy. All resources can also be updated or deleted from the cluster by using the same yaml file that you used to deploy them. 
 
@@ -226,7 +276,7 @@ springboot-docker-service   NodePort   10.100.221.131   <none>        8080:31000
 
 > Note: Our service type is NodePort, The ClusterIP can be accessed by other Pods in the same cluster, but can not be accessed externally outside of the cluster. For NodePort type service ClusterIP is also created automatically which takes the route from the NodePort. The NodePort Service is exposed externally on the available worker nodes at port 31000 for our deployment according to our configuration. That's why we chose NodePort type service to access our web service outside from internal network.
 
-### 7. Accessing the microservice from outside(NodePort service)
+### 9. Accessing the microservice from outside(NodePort service)
 
 In order to access our web service, we need to get external IPs of our worker nodes. We will get the external ip in the output of the following command and send our HTTP requests to that IP.
 
@@ -251,7 +301,7 @@ $ curl http://18.223.117.241:31000
 Hello Docker World
 ```
 
-### 8. Accessing the microservice from outside(As LoadBalancer service)
+### 10. Accessing the microservice from outside(As LoadBalancer service)
 In a cloud environment like AWS, creating an external load balancer is better than creating a NodePort for exposing Services. Because only one URL will be published to outside and web service requests will be distributed among worker nodes by load balancer to achieve optimum load distribution.
 
 We can create a load balancer Service by using the same template except changing the type to “LoadBalancer”. Save as your  resource definiton(kubernetes.yaml) as loadbalancer.yaml an update as shown below
@@ -293,7 +343,7 @@ $ curl -silent adb010d2006b511e99d7702abbb5e7b9-679524454.us-east-2.elb.amazonaw
 Hello Docker World
 ```    
 
-### 9. Deleting Cluster to avoid unnecessary costs
+### 11. Deleting Cluster to avoid unnecessary costs
 
-Do not forget to follow directives given [here](https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html) to delete all resources of AWS EKS cluster 
+After you are done, do not forget to follow directives given [here](https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html) to delete all resources of AWS EKS cluster
 
