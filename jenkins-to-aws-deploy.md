@@ -63,6 +63,9 @@ We will use one of sample CloudFormation template to create required stack for o
 
 You can also [download](https://blog-for-codedeploy.s3.eu-central-1.amazonaws.com/CodeDeployTemplate.json) the AWS Clouformation template. Data strucutre details of JSON should be another topic since it requires diving the AWS Cloud Platform in details. 
 
+### 6. Follow Amazon tutorial from this point
+Now you are ready to execute directives listed on this Amazon [tutorial](https://aws.amazon.com/blogs/devops/setting-up-a-ci-cd-pipeline-by-integrating-jenkins-with-aws-codebuild-and-aws-codedeploy/)
+
 
 
 
