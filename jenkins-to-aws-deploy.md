@@ -10,6 +10,7 @@ We will use Jenkins plugin to deploy our builds automatically with AWS CodeDeplo
 
 ### Prerequisities 
 * Git client should be installed on your local working environment. 
+* Clone or download python backend applicaiton from the repository : [https://github.com/kemalat/python-backend-app](https://github.com/kemalat/python-backend-app)
 
 
 ### 1. Create Administrator User and Group
