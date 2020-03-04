@@ -32,6 +32,9 @@ You should be able to create Administrator user smoohtly if you follow exactly t
 ### 2. Configure Your AWS CLI Credentials
 Once you managed to create Administrator user succesfully, continue configuring your AWS CLI Credentials as explained on this [page](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html).
 
+- You may need to add Python binaries to your current PATH to run aws cli from all folders.
+`export PATH=~/Library/Python/3.7/bin:$PATH`
+
 ### 3. Checkout demo project
 [Spring Boot Docker guide](https://spring.io/guides/gs/spring-boot-docker/) published by Pivotal is enough for performing the demo Kubernetes deployment because it is not requiring any MySQL database. Deploying MySQL to Kubernetes enviroment is the subject of another tutorial. The project we use for demo is fairly simply. It exposes Rest service and returns the static text message when it is called.
 
