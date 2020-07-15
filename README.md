@@ -1,2 +1,2 @@
 # aws-tutorials
-Several deployment instructions for developers.
+Several Deployment Instructions on AWS and cloud solution architectural Q&A
