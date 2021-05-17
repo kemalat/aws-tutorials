@@ -122,4 +122,18 @@ Console via the AWS single sign-on (SSO) endpoint.
 
 <img src="https://docs.aws.amazon.com/IAM/latest/UserGuide/images/saml-based-sso-to-console.diagram.png" alt="drawing" width="500"/>
 
+### What is the main difference between Cognito user pool and Cognito identity pool?
+
+User pools are for authentication (identify verification). With a user pool, your app users can sign in through the user pool or federate through a third-party identity provider (IdP). Identity pools are for authorization (access control).
+
+### AWS Global Accelerator
+AWS Global Accelerator is a networking service that sends your user's traffic through Amazon Web Service's global network infrastructure, improving your internet user performance by up to 60%.
+
+### VPC Flow Logs
+VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data can be published to Amazon CloudWatch Logs or Amazon S3.
+
+###Where are AWS Cost and Usage Reports stored?
+On S3 Buckets
+
+### Which of the following does the AWS Trusted Adviser service offer advice? 
 
